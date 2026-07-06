@@ -1,0 +1,32 @@
+[
+  {
+    "orderId": "DS00025",
+    "date": "2026-07-05",
+    "time": "21:19:43",
+    "customerDetails": {
+      "name": "John",
+      "remarks": "Urgent Requirement",
+      "company": "ABC Industries",
+      "phone": "9876543210",
+      "email": "john@abc.com",
+      "address": "123 Factory Lane"
+    },
+    "products": [
+      {
+        "brand": "3M",
+        "category": "Head Protection",
+        "model": "9320",
+        "id": "DS00001",
+        "quantity": 5
+      },
+      {
+        "brand": "Karam",
+        "category": "Foot Protection",
+        "model": "PN521",
+        "id": "DS00002",
+        "quantity": 2
+      }
+    ],
+    "createdAt": "2026-07-05T16:04:27.917Z"
+  }
+]
