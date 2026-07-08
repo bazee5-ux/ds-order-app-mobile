@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
-import { 
-  View, 
+import React, { Activity, useState } from 'react';
+import { View, 
   Text, 
   StyleSheet, 
   ScrollView, 
   Image, 
   TextInput, 
   TouchableOpacity, 
-  FlatList, 
-  SafeAreaView,
-  StatusBar
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+  FlatList,
+  StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Heart, ShoppingCart, Search, XCircle, ShieldCheck, Eye, Footprints, Hand, User, Stethoscope, Shirt, Zap, Gauge, Flame, TriangleAlert, Link, Droplets, Headphones, BriefcaseMedical } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
 import catalogData from '../catalog/catalog.json';
 import { ProductCard } from '../components/ProductCard';
@@ -65,17 +63,20 @@ export const HomeScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <Image 
-          source={require('../assets/logo.png')} 
-          style={styles.logo} 
-          resizeMode="contain" 
-        />
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/logo1.png')} 
+            style={styles.logo} 
+            resizeMode="contain" 
+          />
+          <Text style={styles.logoText}>DS Engineering Enterprises</Text>
+        </View>
         <View style={styles.headerActions}>
           <TouchableOpacity 
             style={styles.headerBtn}
             onPress={() => navigation.navigate('ProductList', { categoryName: 'Favorites' })}
           >
-            <Ionicons name="heart-outline" size={24} color={COLORS.text} />
+            <Heart size={24} color={COLORS.text} />
             {favorites.length > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{favorites.length}</Text>
@@ -86,7 +87,7 @@ export const HomeScreen: React.FC = () => {
             style={styles.headerBtn}
             onPress={() => navigation.navigate('Cart')}
           >
-            <Ionicons name="cart-outline" size={24} color={COLORS.text} />
+            <ShoppingCart size={24} color={COLORS.text} />
             {cartCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{cartCount}</Text>
@@ -109,7 +110,7 @@ export const HomeScreen: React.FC = () => {
         {/* Search Bar */}
         <View style={styles.searchSection}>
           <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color={COLORS.textMuted} style={styles.searchIcon} />
+            <Search size={20} color={COLORS.textMuted} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by brand, model, category..."
@@ -120,7 +121,7 @@ export const HomeScreen: React.FC = () => {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
+                <XCircle size={18} color={COLORS.textMuted} />
               </TouchableOpacity>
             )}
           </View>
@@ -142,7 +143,30 @@ export const HomeScreen: React.FC = () => {
               activeOpacity={0.7}
             >
               <View style={styles.categoryIconContainer}>
-                <Ionicons name={cat.icon as any} size={24} color={COLORS.primary} />
+                
+    {(() => {
+      const IconMap: any = {
+        'shield-checkmark-outline': ShieldCheck,
+        'eye-outline': Eye,
+        'walk-outline': Footprints,
+        'hand-left-outline': Hand,
+        'body-outline': User,
+        'medical-outline': Stethoscope,
+        'shirt-outline': Shirt,
+        'git-compare-outline': Activity,
+        'flash-outline': Zap,
+        'speedometer-outline': Gauge,
+        'flame-outline': Flame,
+        'warning-outline': TriangleAlert,
+        'link-outline': Link,
+        'water-outline': Droplets,
+        'ear-outline': Headphones,
+        'medkit-outline': BriefcaseMedical,
+      };
+      const IconComponent = IconMap[cat.icon];
+      return IconComponent ? <IconComponent size={24} color={COLORS.primary} /> : null;
+    })()}
+  
               </View>
               <Text style={styles.categoryName} numberOfLines={2}>{cat.name}</Text>
             </TouchableOpacity>
@@ -213,9 +237,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 16,
+    fontFamily: FONTS.extraBold,
+    color: COLORS.primary,
+    marginLeft: 10,
+  },
   logo: {
-    width: 140,
-    height: 40,
+    width: 50,
+    height: 50,
   },
   headerActions: {
     flexDirection: 'row',
@@ -239,7 +273,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: COLORS.text,
     fontSize: 9,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
   },
   banner: {
     backgroundColor: COLORS.primary,
@@ -255,14 +289,14 @@ const styles = StyleSheet.create({
   },
   bannerSubtitle: {
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.accent,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   bannerTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: '#FFFFFF',
     marginTop: 6,
   },
@@ -312,7 +346,7 @@ const styles = StyleSheet.create({
   searchBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
   sectionHeader: {
     paddingHorizontal: 16,
@@ -321,7 +355,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
   },
   categoriesGrid: {
@@ -348,7 +382,7 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     color: COLORS.text,
     textAlign: 'center',
     marginTop: 6,
@@ -378,7 +412,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.textMuted,
   },
   footerSubText: {
@@ -398,7 +432,7 @@ const styles = StyleSheet.create({
   },
   footerContactLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.text,
     marginBottom: 4,
   },

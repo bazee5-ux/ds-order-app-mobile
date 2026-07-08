@@ -131,7 +131,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (itemIndex > -1) {
       // Item exists, update quantity
       const newCart = [...cart];
-      newCart[itemIndex].quantity += quantity;
+      newCart[itemIndex] = {
+        ...newCart[itemIndex],
+        quantity: newCart[itemIndex].quantity + quantity
+      };
       saveCart(newCart);
     } else {
       // Add new item

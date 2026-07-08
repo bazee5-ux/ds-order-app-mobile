@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
+import { View, 
   Text, 
   StyleSheet, 
   Image, 
   ScrollView, 
-  TouchableOpacity, 
-  SafeAreaView 
-} from 'react-native';
+  TouchableOpacity,
+  LayoutAnimation,
+  UIManager,
+  Platform,
+  TextInput } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { Minus, Plus, ShoppingCart } from 'lucide-react-native';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, Product } from '../context/AppContext';
 import { productImages } from '../assets/productImages';
+import { Ionicons } from '@expo/vector-icons';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const getCategoryDescription = (category: string, brand: string, model: string): string => {
   const cat = category.toLowerCase();
@@ -70,12 +77,31 @@ const getCategoryDescription = (category: string, brand: string, model: string):
 export const ProductDetailsScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { product } = route.params as { product: Product };
   
-  const { addToCart, toggleFavorite, isFavorite, addToRecentlyViewed } = useApp();
-  const [quantity, setQuantity] = useState(1);
-
+  const { addToCart, toggleFavorite, isFavorite, addToRecentlyViewed, cart, updateCartQuantity } = useApp();
+  
   const favorite = isFavorite(product.id);
+  const cartItem = cart.find(item => item.product.id === product.id);
+  const currentQty = cartItem ? cartItem.quantity : 0;
+
+  const [inputValue, setInputValue] = useState(String(currentQty));
+
+  useEffect(() => {
+    setInputValue(String(currentQty));
+  }, [currentQty]);
+
+  const handleBlur = () => {
+    let num = parseInt(inputValue, 10);
+    if (isNaN(num) || num < 0) {
+      num = 0;
+    }
+    if (num !== currentQty) {
+      updateCartQuantity(product.id, num);
+    }
+    setInputValue(String(num));
+  };
 
   // Add to recently viewed on mount
   useEffect(() => {
@@ -84,20 +110,50 @@ export const ProductDetailsScreen: React.FC = () => {
     }
   }, [product]);
 
-  const handleIncrement = () => {
-    setQuantity(prev => prev + 1);
-  };
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const handleDecrement = () => {
-    setQuantity(prev => (prev > 1 ? prev - 1 : 1));
-  };
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity 
+          style={{ marginRight: 16, position: 'relative' }} 
+          onPress={() => navigation.navigate('Cart')}
+        >
+          <ShoppingCart size={24} color={COLORS.primary} />
+          {cartCount > 0 && (
+            <View style={{
+              position: 'absolute',
+              top: -6,
+              right: -8,
+              backgroundColor: COLORS.error,
+              borderRadius: 10,
+              minWidth: 18,
+              height: 18,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 4,
+            }}>
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                {cartCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )
+    });
+  }, [navigation, cartCount]);
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
-    navigation.navigate('Cart');
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    addToCart(product, 1);
   };
 
-  const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo.png');
+  const handleUpdateQty = (newQty: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    updateCartQuantity(product.id, newQty);
+  };
+
+  const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo1.png');
   const description = getCategoryDescription(product.category, product.brand, product.model);
 
   return (
@@ -111,7 +167,7 @@ export const ProductDetailsScreen: React.FC = () => {
             onPress={() => toggleFavorite(product.id)}
             activeOpacity={0.7}
           >
-            <Ionicons 
+            <Ionicons
               name={favorite ? "heart" : "heart-outline"} 
               size={24} 
               color={favorite ? COLORS.error : COLORS.textMuted} 
@@ -142,44 +198,49 @@ export const ProductDetailsScreen: React.FC = () => {
 
           <View style={styles.divider} />
 
-          {/* Quantity Selector Section */}
-          <Text style={styles.sectionTitle}>Specify Quantity</Text>
-          <View style={styles.qtyContainer}>
-            <TouchableOpacity 
-              style={styles.qtyBtn} 
-              onPress={handleDecrement}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="remove" size={20} color={COLORS.text} />
-            </TouchableOpacity>
-            
-            <View style={styles.qtyDisplay}>
-              <Text style={styles.qtyText}>{quantity}</Text>
-            </View>
-            
-            <TouchableOpacity 
-              style={styles.qtyBtn} 
-              onPress={handleIncrement}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={20} color={COLORS.text} />
-            </TouchableOpacity>
-            
-            <Text style={styles.qtyUnit}>Units</Text>
-          </View>
+          {/* Removed Quantity Selector */}
         </View>
       </ScrollView>
 
       {/* Fixed Bottom Action Panel */}
-      <View style={styles.bottomPanel}>
-        <TouchableOpacity 
-          style={styles.addToCartBtn} 
-          onPress={handleAddToCart}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.addToCartBtnText}>Add To Enquiry Cart</Text>
-        </TouchableOpacity>
+      <View style={[styles.bottomPanel, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        {currentQty > 0 ? (
+          <View style={styles.activeCartPanel}>
+            <View style={styles.qtySelectorCompact}>
+              <TouchableOpacity onPress={() => handleUpdateQty(currentQty - 1)} style={styles.qtyBtnCompact}>
+                <Minus size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TextInput
+                style={styles.qtyInputCompact}
+                keyboardType="numeric"
+                value={inputValue}
+                onChangeText={setInputValue}
+                onBlur={handleBlur}
+                selectTextOnFocus
+              />
+              <TouchableOpacity onPress={() => handleUpdateQty(currentQty + 1)} style={styles.qtyBtnCompact}>
+                <Plus size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity 
+              style={styles.goToCartBtn} 
+              onPress={() => navigation.navigate('Cart')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.goToCartBtnText}>View Cart</Text>
+              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.addToCartBtn} 
+            onPress={handleAddToCart}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.addToCartBtnText}>Add To Enquiry Cart</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -220,21 +281,21 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 12,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.primary,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   model: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
     marginTop: 6,
   },
   brand: {
     fontSize: 16,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     marginTop: 4,
   },
   badgeRow: {
@@ -260,13 +321,13 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.success,
   },
   codeText: {
     fontSize: 12,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   divider: {
     height: 1,
@@ -275,7 +336,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
     marginBottom: 8,
   },
@@ -307,13 +368,13 @@ const styles = StyleSheet.create({
   },
   qtyText: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
   },
   qtyUnit: {
     fontSize: 14,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     marginLeft: 12,
   },
   bottomPanel: {
@@ -321,7 +382,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
@@ -338,7 +400,51 @@ const styles = StyleSheet.create({
   },
   addToCartBtnText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+  },
+  activeCartPanel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  qtySelectorCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EEF2F6',
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    flex: 0.45,
+  },
+  qtyBtnCompact: {
+    padding: 4,
+  },
+  qtyInputCompact: {
+    fontSize: 18,
+    fontFamily: FONTS.extraBold,
+    color: COLORS.primary,
+    minWidth: 40,
+    textAlign: 'center',
+    padding: 0,
+  },
+  goToCartBtn: {
+    backgroundColor: COLORS.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: BORDER_RADIUS.md,
+    flex: 0.5,
+    ...SHADOWS.soft,
+  },
+  goToCartBtnText: {
+    color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
 });

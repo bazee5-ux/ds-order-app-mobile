@@ -1,21 +1,97 @@
 import React from 'react';
-import { 
-  View, 
+import { View, 
   Text, 
   StyleSheet, 
   FlatList, 
   Image, 
-  TouchableOpacity, 
-  SafeAreaView 
-} from 'react-native';
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react-native';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, CartItem } from '../context/AppContext';
 import { productImages } from '../assets/productImages';
+import { Ionicons } from '@expo/vector-icons';
+
+const CartItemRow = ({ item, updateCartQuantity, removeFromCart }: { item: CartItem, updateCartQuantity: any, removeFromCart: any }) => {
+  const { product, quantity } = item;
+  const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo1.png');
+  const [inputValue, setInputValue] = React.useState(String(quantity));
+
+  React.useEffect(() => {
+    setInputValue(String(quantity));
+  }, [quantity]);
+
+  const handleBlur = () => {
+    let num = parseInt(inputValue, 10);
+    if (isNaN(num) || num < 1) {
+      num = 1;
+      setInputValue(String(num));
+    }
+    if (num !== quantity) {
+      updateCartQuantity(product.id, num);
+    }
+  };
+
+  return (
+    <View style={styles.itemCard}>
+      <Image source={imageSource} style={styles.itemImage} resizeMode="contain" />
+      
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemCategory} numberOfLines={1}>{product.category}</Text>
+        <Text style={styles.itemModel} numberOfLines={1}>{product.model}</Text>
+        <Text style={styles.itemBrand}>{product.brand}</Text>
+        
+        <View style={styles.itemActions}>
+          <View style={styles.qtyContainer}>
+            <TouchableOpacity 
+              style={styles.qtyBtn} 
+              onPress={() => updateCartQuantity(product.id, quantity - 1)}
+              activeOpacity={0.7}
+            >
+              <Minus size={16} color={COLORS.text} />
+            </TouchableOpacity>
+            
+            <View style={styles.qtyDisplay}>
+              <TextInput 
+                style={styles.qtyInput}
+                keyboardType="numeric"
+                value={inputValue}
+                onChangeText={setInputValue}
+                onBlur={handleBlur}
+                selectTextOnFocus
+              />
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.qtyBtn} 
+              onPress={() => updateCartQuantity(product.id, quantity + 1)}
+              activeOpacity={0.7}
+            >
+              <Plus size={16} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.removeBtn} 
+            onPress={() => removeFromCart(product.id)}
+            activeOpacity={0.7}
+          >
+            <Trash2 size={18} color={COLORS.error} />
+            <Text style={styles.removeBtnText}>Remove</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 export const CartScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { cart, updateCartQuantity, removeFromCart } = useApp();
 
   const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -26,62 +102,20 @@ export const CartScreen: React.FC = () => {
     }
   };
 
-  const renderCartItem = ({ item }: { item: CartItem }) => {
-    const { product, quantity } = item;
-    const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo.png');
-
-    return (
-      <View style={styles.itemCard}>
-        <Image source={imageSource} style={styles.itemImage} resizeMode="contain" />
-        
-        <View style={styles.itemDetails}>
-          <Text style={styles.itemCategory} numberOfLines={1}>{product.category}</Text>
-          <Text style={styles.itemModel} numberOfLines={1}>{product.model}</Text>
-          <Text style={styles.itemBrand}>{product.brand}</Text>
-          
-          <View style={styles.itemActions}>
-            {/* Quantity Adjuster */}
-            <View style={styles.qtyContainer}>
-              <TouchableOpacity 
-                style={styles.qtyBtn} 
-                onPress={() => updateCartQuantity(product.id, quantity - 1)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="remove" size={16} color={COLORS.text} />
-              </TouchableOpacity>
-              <View style={styles.qtyDisplay}>
-                <Text style={styles.qtyText}>{quantity}</Text>
-              </View>
-              <TouchableOpacity 
-                style={styles.qtyBtn} 
-                onPress={() => updateCartQuantity(product.id, quantity + 1)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="add" size={16} color={COLORS.text} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Trash Button */}
-            <TouchableOpacity 
-              style={styles.removeBtn} 
-              onPress={() => removeFromCart(product.id)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="trash-outline" size={18} color={COLORS.error} />
-              <Text style={styles.removeBtnText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  const renderCartItem = ({ item }: { item: CartItem }) => (
+    <CartItemRow 
+      item={item} 
+      updateCartQuantity={updateCartQuantity} 
+      removeFromCart={removeFromCart} 
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       {cart.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="cart-outline" size={54} color={COLORS.textMuted} />
+            <ShoppingCart size={54} color={COLORS.textMuted} />
           </View>
           <Text style={styles.emptyTitle}>Enquiry Cart is Empty</Text>
           <Text style={styles.emptyDesc}>
@@ -97,16 +131,18 @@ export const CartScreen: React.FC = () => {
         </View>
       ) : (
         <View style={styles.cartContainer}>
-          <FlatList
-            data={cart}
-            keyExtractor={(item) => item.product.id}
-            renderItem={renderCartItem}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
+          <ScrollView contentContainerStyle={styles.listContent}>
+            <FlatList
+              data={cart}
+              keyExtractor={(item) => item.product.id}
+              renderItem={renderCartItem}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          </ScrollView>
           
-          {/* Bottom Panel */}
-          <View style={styles.bottomPanel}>
+          {/* Checkout Bottom Panel */}
+          <View style={[styles.bottomPanel, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryText}>Total Selection</Text>
               <Text style={styles.summaryValue}>{totalQuantity} Units ({cart.length} Items)</Text>
@@ -165,21 +201,21 @@ const styles = StyleSheet.create({
   },
   itemCategory: {
     fontSize: 9,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   itemModel: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.text,
     marginTop: 2,
   },
   itemBrand: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
     marginBottom: 8,
   },
   itemActions: {
@@ -202,14 +238,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qtyDisplay: {
-    width: 32,
+    width: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: COLORS.border,
   },
-  qtyText: {
-    fontSize: 13,
-    fontWeight: '700',
+  qtyInput: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
     color: COLORS.text,
+    textAlign: 'center',
+    width: '100%',
+    padding: 0,
+    height: 28,
   },
   removeBtn: {
     flexDirection: 'row',
@@ -220,7 +263,7 @@ const styles = StyleSheet.create({
   removeBtnText: {
     fontSize: 12,
     color: COLORS.error,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     marginLeft: 4,
   },
   emptyContainer: {
@@ -243,7 +286,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
     marginBottom: 8,
   },
@@ -265,14 +308,15 @@ const styles = StyleSheet.create({
   browseBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
   bottomPanel: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
@@ -287,11 +331,11 @@ const styles = StyleSheet.create({
   summaryText: {
     fontSize: 14,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   summaryValue: {
     fontSize: 15,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
   },
   infoText: {
@@ -312,6 +356,6 @@ const styles = StyleSheet.create({
   checkoutBtnText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
 });

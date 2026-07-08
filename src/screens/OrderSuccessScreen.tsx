@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { CheckCircle } from 'lucide-react-native';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 
 export const OrderSuccessScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -20,7 +21,7 @@ export const OrderSuccessScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name="checkmark-circle" size={80} color={COLORS.success} />
+          <CheckCircle size={80} color={COLORS.success} />
         </View>
 
         <Text style={styles.title}>Enquiry Submitted Successfully</Text>
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: 24,
@@ -87,20 +88,20 @@ const styles = StyleSheet.create({
   },
   orderIdLabel: {
     fontSize: 10,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.textMuted,
     letterSpacing: 1.5,
   },
   orderIdText: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.primary,
     marginTop: 4,
     letterSpacing: 0.5,
   },
   thankYou: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: 8,
@@ -126,6 +127,6 @@ const styles = StyleSheet.create({
   btnText: {
     color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
 });

@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
+import { View, 
   Text, 
   StyleSheet, 
   FlatList, 
-  SafeAreaView, 
   ActivityIndicator, 
   TouchableOpacity,
-  RefreshControl
-} from 'react-native';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, Product } from '../context/AppContext';
+import { ShoppingCart } from 'lucide-react-native';
 import catalogData from '../catalog/catalog.json';
 import { ProductCard } from '../components/ProductCard';
 import { ProductCardSkeleton } from '../components/SkeletonLoader';
@@ -20,7 +19,7 @@ import { ProductCardSkeleton } from '../components/SkeletonLoader';
 export const ProductListScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const { favorites } = useApp();
+  const { favorites, cart } = useApp();
   
   const categoryName = route.params?.categoryName;
   const searchQuery = route.params?.searchQuery;
@@ -57,6 +56,39 @@ export const ProductListScreen: React.FC = () => {
   useEffect(() => {
     fetchFilteredProducts();
   }, [categoryName, searchQuery, favorites]); // refetch when filters or favorites change
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity 
+          style={{ marginRight: 16, position: 'relative' }} 
+          onPress={() => navigation.navigate('Cart')}
+        >
+          <ShoppingCart size={24} color={COLORS.primary} />
+          {cartCount > 0 && (
+            <View style={{
+              position: 'absolute',
+              top: -6,
+              right: -8,
+              backgroundColor: COLORS.error,
+              borderRadius: 10,
+              minWidth: 18,
+              height: 18,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingHorizontal: 4,
+            }}>
+              <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                {cartCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )
+    });
+  }, [navigation, cartCount]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -173,14 +205,14 @@ const styles = StyleSheet.create({
   },
   listHeaderTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
   },
   listHeaderSub: {
     fontSize: 12,
     color: COLORS.textMuted,
     marginTop: 4,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -199,7 +231,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: FONTS.extraBold,
     color: COLORS.text,
     marginBottom: 8,
   },
@@ -221,6 +253,6 @@ const styles = StyleSheet.create({
   resetBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
   },
 });

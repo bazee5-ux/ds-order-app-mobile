@@ -4,8 +4,8 @@ const twilio = require('twilio');
 // Helper to format products for email body
 const formatProductsForEmail = (products) => {
   return products.map((p, idx) => {
-    return `${idx + 1}.\nBrand\n${p.brand}\nModel\n${p.model}\nQuantity\n${p.quantity}`;
-  }).join('\n\n');
+    return `  ${idx + 1}. Brand: ${p.brand} | Model: ${p.model} | Quantity: ${p.quantity}`;
+  }).join('\n');
 };
 
 // Helper to format products for WhatsApp body
@@ -17,35 +17,23 @@ const sendEmailNotification = async (order) => {
   const adminEmail = process.env.ADMIN_EMAIL || 'dsengineering.py@gmail.com';
   const { customerDetails, orderId, date, time, products } = order;
 
-  // Build the email body matching the requested format
-  const bodyText = `New Product Enquiry
+  // Clean, readable plain-text format with colons
+  const bodyText = `--- New Product Enquiry ---
 
-Customer Name
-${customerDetails.name}
+Customer Name : ${customerDetails.name}
+Company       : ${customerDetails.company}
+Phone         : ${customerDetails.phone}
+Email         : ${customerDetails.email || 'N/A'}
+Address       : ${customerDetails.address}
+Remarks       : ${customerDetails.remarks || 'None'}
 
-Company
-${customerDetails.company}
+Order ID      : ${orderId}
+Order Date    : ${date} ${time}
 
-Phone
-${customerDetails.phone}
-
-Email
-${customerDetails.email || 'N/A'}
-
-Address
-${customerDetails.address}
-
-Order ID
-${orderId}
-
-Order Date
-${date} ${time}
-
-Products
+Products Requested:
 ${formatProductsForEmail(products)}
 
-Remarks
-${customerDetails.remarks || 'None'}`;
+---------------------------`;
 
   // Check if SMTP is configured
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -61,7 +49,7 @@ ${customerDetails.remarks || 'None'}`;
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false, // true for 465, false for other ports
+      secure: parseInt(process.env.SMTP_PORT || '587') === 465, // true for 465, false for other ports
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,

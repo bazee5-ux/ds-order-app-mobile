@@ -1,6 +1,6 @@
 export const COLORS = {
-  primary: '#005BAC',       // Deep Premium Blue
-  accent: '#FFB000',        // Safety Warm Amber/Yellow
+  primary: '#004488',       // Deep Premium Blue
+  accent: '#F97316',        // Vibrant Orange
   background: '#F8FAFC',    // Light Slate Background
   surface: '#FFFFFF',       // Card/Surface background
   text: '#0F172A',          // Deep Slate Text
@@ -13,8 +13,8 @@ export const COLORS = {
   
   // Dark mode mappings
   dark: {
-    primary: '#3B82F6',
-    accent: '#FFB000',
+    primary: '#0055AA',
+    accent: '#FB923C',
     background: '#0F172A',
     surface: '#1E293B',
     text: '#F8FAFC',
@@ -22,6 +22,14 @@ export const COLORS = {
     border: '#334155',
     cardShadow: 'rgba(0, 0, 0, 0.3)',
   }
+};
+
+export const FONTS = {
+  regular: 'Urbanist_400Regular',
+  medium: 'Urbanist_500Medium',
+  semiBold: 'Urbanist_600SemiBold',
+  bold: 'Urbanist_700Bold',
+  extraBold: 'Urbanist_800ExtraBold',
 };
 
 export const SHADOWS = {

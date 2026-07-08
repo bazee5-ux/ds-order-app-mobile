@@ -1,6 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Text, StatusBar, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts, Urbanist_400Regular, Urbanist_500Medium, Urbanist_600SemiBold, Urbanist_700Bold, Urbanist_800ExtraBold } from '@expo-google-fonts/urbanist';
 import { AppProvider, useApp } from './src/context/AppContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { COLORS } from './src/theme/colors';
@@ -24,10 +26,24 @@ function AppContent() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Urbanist_400Regular,
+    Urbanist_500Medium,
+    Urbanist_600SemiBold,
+    Urbanist_700Bold,
+    Urbanist_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return null; // Or a splash screen
+  }
+
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -46,7 +62,7 @@ const styles = StyleSheet.create({
   offlineText: {
     color: '#0F172A',
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Urbanist_700Bold',
     textAlign: 'center',
   },
 });

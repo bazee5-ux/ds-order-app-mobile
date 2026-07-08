@@ -1,25 +1,31 @@
 {
   "expo": {
-    "name": "ds-safety-app",
-    "slug": "ds-safety-app",
+    "name": "DS Engineering Enterprises",
+    "slug": "ds-engineering",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./src/assets/logo1.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/logo1.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./src/assets/logo1.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./src/assets/logo1.png"
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

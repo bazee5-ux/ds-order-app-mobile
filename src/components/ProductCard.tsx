@@ -1,10 +1,15 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions, LayoutAnimation, UIManager, Platform, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import { ShoppingCart, Plus, Minus } from 'lucide-react-native';
+import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, Product } from '../context/AppContext';
 import { productImages } from '../assets/productImages';
+import { Ionicons } from '@expo/vector-icons';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface ProductCardProps {
   product: Product;
@@ -16,19 +21,45 @@ const GRID_CARD_WIDTH = (width - 48) / 2; // Page margin 16 * 2 + spacing 16
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, horizontal = false }) => {
   const navigation = useNavigation<any>();
-  const { addToCart, toggleFavorite, isFavorite } = useApp();
+  const { addToCart, toggleFavorite, isFavorite, cart, updateCartQuantity } = useApp();
   const favorite = isFavorite(product.id);
+
+  const cartItem = cart.find(item => item.product.id === product.id);
+  const currentQty = cartItem ? cartItem.quantity : 0;
+
+  const [inputValue, setInputValue] = useState(String(currentQty));
+
+  useEffect(() => {
+    setInputValue(String(currentQty));
+  }, [currentQty]);
+
+  const handleBlur = () => {
+    let num = parseInt(inputValue, 10);
+    if (isNaN(num) || num < 0) {
+      num = 0;
+    }
+    if (num !== currentQty) {
+      updateCartQuantity(product.id, num);
+    }
+    setInputValue(String(num));
+  };
 
   const handlePress = () => {
     navigation.navigate('ProductDetails', { product });
   };
 
   const handleAddToCart = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     addToCart(product, 1);
   };
 
+  const handleUpdateQty = (newQty: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    updateCartQuantity(product.id, newQty);
+  };
+
   // Safe image lookup
-  const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo.png');
+  const imageSource = (productImages as any)[product.imageKey] || require('../assets/logo1.png');
 
   if (horizontal) {
     return (
@@ -43,14 +74,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, horizontal = 
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{product.availability}</Text>
             </View>
-            <TouchableOpacity 
-              style={styles.actionBtnHorizontal}
-              onPress={handleAddToCart}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="cart-outline" size={16} color="#FFFFFF" />
-              <Text style={styles.actionBtnTextHorizontal}>Add</Text>
-            </TouchableOpacity>
+            {currentQty > 0 ? (
+              <View style={styles.qtySelectorHorizontal}>
+                <TouchableOpacity onPress={() => handleUpdateQty(currentQty - 1)} style={styles.qtyBtnHorizontal}>
+                  <Minus size={14} color={COLORS.primary} />
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.qtyInputHorizontal}
+                  keyboardType="numeric"
+                  value={inputValue}
+                  onChangeText={setInputValue}
+                  onBlur={handleBlur}
+                  selectTextOnFocus
+                />
+                <TouchableOpacity onPress={() => handleUpdateQty(currentQty + 1)} style={styles.qtyBtnHorizontal}>
+                  <Plus size={14} color={COLORS.primary} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                style={styles.actionBtnHorizontal}
+                onPress={handleAddToCart}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.actionBtnTextHorizontal}>Add</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         <TouchableOpacity 
@@ -95,14 +144,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, horizontal = 
           <Text style={styles.badgeTextGrid}>{product.availability}</Text>
         </View>
         
-        <TouchableOpacity 
-          style={styles.actionBtnGrid}
-          onPress={handleAddToCart}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="cart-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-          <Text style={styles.actionBtnTextGrid}>Add to Cart</Text>
-        </TouchableOpacity>
+        {currentQty > 0 ? (
+          <View style={styles.qtySelectorGrid}>
+            <TouchableOpacity onPress={() => handleUpdateQty(currentQty - 1)} style={styles.qtyBtnGrid}>
+              <Minus size={16} color={COLORS.primary} />
+            </TouchableOpacity>
+            <TextInput
+              style={styles.qtyInputGrid}
+              keyboardType="numeric"
+              value={inputValue}
+              onChangeText={setInputValue}
+              onBlur={handleBlur}
+              selectTextOnFocus
+            />
+            <TouchableOpacity onPress={() => handleUpdateQty(currentQty + 1)} style={styles.qtyBtnGrid}>
+              <Plus size={16} color={COLORS.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={styles.actionBtnGrid}
+            onPress={handleAddToCart}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.actionBtnTextGrid}>Add</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -134,21 +201,21 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   model: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.text,
     marginTop: 2,
   },
   brand: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   rowHorizontal: {
     flexDirection: 'row',
@@ -164,7 +231,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     color: COLORS.success,
   },
   actionBtnHorizontal: {
@@ -177,7 +244,7 @@ const styles = StyleSheet.create({
   },
   actionBtnTextHorizontal: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: '#FFFFFF',
     marginLeft: 4,
   },
@@ -226,21 +293,21 @@ const styles = StyleSheet.create({
   },
   categoryGrid: {
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   modelGrid: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: FONTS.bold,
     color: COLORS.text,
     marginTop: 2,
   },
   brandGrid: {
     fontSize: 12,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontFamily: FONTS.medium,
   },
   badgeGrid: {
     flexDirection: 'row',
@@ -257,7 +324,7 @@ const styles = StyleSheet.create({
   },
   badgeTextGrid: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: FONTS.semiBold,
     color: COLORS.success,
   },
   actionBtnGrid: {
@@ -270,8 +337,54 @@ const styles = StyleSheet.create({
     ...SHADOWS.soft,
   },
   actionBtnTextGrid: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontFamily: FONTS.bold,
     color: '#FFFFFF',
+  },
+  qtySelectorHorizontal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEF2F6',
+    borderRadius: BORDER_RADIUS.sm,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  qtyBtnHorizontal: {
+    padding: 4,
+  },
+  qtyInputHorizontal: {
+    fontSize: 12,
+    fontFamily: FONTS.bold,
+    color: COLORS.primary,
+    marginHorizontal: 4,
+    minWidth: 24,
+    textAlign: 'center',
+    padding: 0,
+    height: 20,
+  },
+  qtySelectorGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EEF2F6',
+    borderRadius: BORDER_RADIUS.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  qtyBtnGrid: {
+    padding: 4,
+  },
+  qtyInputGrid: {
+    fontSize: 14,
+    fontFamily: FONTS.extraBold,
+    color: COLORS.primary,
+    minWidth: 32,
+    textAlign: 'center',
+    padding: 0,
+    height: 24,
   },
 });
