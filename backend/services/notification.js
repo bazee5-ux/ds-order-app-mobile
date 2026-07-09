@@ -49,14 +49,19 @@ ${formatProductsForEmail(products)}
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'onboarding@resend.dev', // Default testing domain for Resend
       to: adminEmail,
       subject: `New Product Enquiry - ${orderId}`,
       text: bodyText,
     });
 
-    console.log(`Email notification sent successfully via Resend: ${data.id}`);
+    if (error) {
+      console.error("Resend API Error:", error);
+      throw new Error(error.message);
+    }
+
+    console.log(`Email notification sent successfully via Resend: ${data?.id}`);
     return { success: true, data };
   } catch (error) {
     console.error('Failed to send email notification:', error);

@@ -131,6 +131,10 @@ export const CheckoutScreen: React.FC = () => {
       };
 
       // 4. Send POST to Backend API
+      console.log("=== STARTING API CALL ===");
+      console.log("URL:", `${API_URL}/orders`);
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+
       const response = await fetch(`${API_URL}/orders`, {
         method: "POST",
         headers: {
@@ -139,9 +143,16 @@ export const CheckoutScreen: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
+      console.log("=== API CALL COMPLETED ===");
+      console.log("Response Status:", response.status);
+
       if (!response.ok) {
         throw new Error("Server returned an error.");
       }
+
+      // Read JSON response (if needed) to verify what backend returns
+      const responseData = await response.json();
+      console.log("Response Data:", responseData);
 
       // 5. Save customer details locally for future pre-filling
       await saveProfile({
