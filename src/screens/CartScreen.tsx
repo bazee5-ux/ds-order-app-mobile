@@ -6,15 +6,16 @@ import { View,
   Image, 
   TouchableOpacity,
   TextInput,
-  ScrollView,
-  Alert } from 'react-native';
+  Alert,
+  KeyboardAvoidingView,
+  Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react-native';
 import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, CartItem } from '../context/AppContext';
 import { productImages } from '../assets/productImages';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const CartItemRow = ({ item, updateCartQuantity, removeFromCart }: { item: CartItem, updateCartQuantity: any, removeFromCart: any }) => {
   const { product, quantity } = item;
@@ -112,7 +113,11 @@ export const CartScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {cart.length === 0 ? (
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {cart.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconContainer}>
             <ShoppingCart size={54} color={COLORS.textMuted} />
@@ -131,15 +136,13 @@ export const CartScreen: React.FC = () => {
         </View>
       ) : (
         <View style={styles.cartContainer}>
-          <ScrollView contentContainerStyle={styles.listContent}>
-            <FlatList
-              data={cart}
-              keyExtractor={(item) => item.product.id}
-              renderItem={renderCartItem}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            />
-          </ScrollView>
+          <FlatList
+            data={cart}
+            keyExtractor={(item) => item.product.id}
+            renderItem={renderCartItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          />
           
           {/* Checkout Bottom Panel */}
           <View style={[styles.bottomPanel, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -161,6 +164,7 @@ export const CartScreen: React.FC = () => {
           </View>
         </View>
       )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

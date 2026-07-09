@@ -12,13 +12,14 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from "../theme/colors";
 import { useApp } from "../context/AppContext";
 import { CustomAlert } from "../components/CustomAlert";
 
 // Resolve host machine API URL based on emulator platform
-const API_URL = "http://192.168.1.211:5000"; // PC's local IP for physical device connection
+const API_URL = "https://ds-order-api.onrender.com"; // Live Render API
 
 export const CheckoutScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -317,7 +318,12 @@ export const CheckoutScreen: React.FC = () => {
         {/* Place Order Panel */}
         <View style={[styles.bottomPanel, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           {submitting ? (
-            <View style={styles.submittingContainer}>
+            <LinearGradient
+              colors={COLORS.primaryGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.submittingContainer}
+            >
               <ActivityIndicator
                 size="small"
                 color="#FFFFFF"
@@ -326,20 +332,27 @@ export const CheckoutScreen: React.FC = () => {
               <Text style={styles.submittingText}>
                 Submitting Safety Enquiry...
               </Text>
-            </View>
+            </LinearGradient>
           ) : (
             <TouchableOpacity
-              style={styles.submitBtn}
+              style={styles.submitBtnContainer}
               onPress={handlePlaceOrder}
               activeOpacity={0.8}
             >
-              <Text style={styles.submitBtnText}>Place Purchase Enquiry</Text>
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={20}
-                color="#FFFFFF"
-                style={{ marginLeft: 6 }}
-              />
+              <LinearGradient
+                colors={COLORS.primaryGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.submitBtn}
+              >
+                <Text style={styles.submitBtnText}>Place Purchase Enquiry</Text>
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={20}
+                  color="#FFFFFF"
+                  style={{ marginLeft: 6 }}
+                />
+              </LinearGradient>
             </TouchableOpacity>
           )}
         </View>
@@ -432,14 +445,17 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.border,
     ...SHADOWS.medium,
   },
+  submitBtnContainer: {
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.soft,
+    overflow: 'hidden',
+  },
   submitBtn: {
-    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: BORDER_RADIUS.md,
-    ...SHADOWS.soft,
+    paddingHorizontal: 16,
   },
   submitBtnText: {
     color: "#FFFFFF",
@@ -447,11 +463,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bold,
   },
   submittingContainer: {
-    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
+    paddingHorizontal: 16,
     borderRadius: BORDER_RADIUS.md,
     opacity: 0.8,
   },

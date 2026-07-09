@@ -1,6 +1,9 @@
 export const COLORS = {
-  primary: '#004488',       // Deep Premium Blue
-  accent: '#F97316',        // Vibrant Orange
+  primary: 'hsl(174, 76%, 42%)',       // Teal primary color
+  accent: '#808d9d',        // Slate gray accent color
+  primaryGradient: ['rgb(13, 108, 100)', 'hsl(174, 76%, 42%)'], // Updated Gradient as requested
+    secondaryGradient: ['#000000ff', 'hsl(174, 76%, 42%)'], // Updated Gradient as requested
+
   background: '#F8FAFC',    // Light Slate Background
   surface: '#FFFFFF',       // Card/Surface background
   text: '#0F172A',          // Deep Slate Text
@@ -13,8 +16,9 @@ export const COLORS = {
   
   // Dark mode mappings
   dark: {
-    primary: '#0055AA',
-    accent: '#FB923C',
+    primary: 'hsl(174, 76%, 42%)',
+    accent: '#808d9d',
+    primaryGradient: ['#d0f1c6', 'hsl(174, 76%, 42%)'],
     background: '#0F172A',
     surface: '#1E293B',
     text: '#F8FAFC',

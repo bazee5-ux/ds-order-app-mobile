@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const twilio = require('twilio');
 
 // Helper to format products for email body
@@ -35,8 +36,8 @@ ${formatProductsForEmail(products)}
 
 ---------------------------`;
 
-  // Check if SMTP is configured
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  // Check if Resend is configured
+  if (!process.env.RESEND_API_KEY) {
     console.log('\n--- [SANDBOX MODE] EMAIL NOTIFICATION LOG ---');
     console.log(`To: ${adminEmail}`);
     console.log(`Subject: New Product Enquiry - ${orderId}`);
@@ -46,26 +47,17 @@ ${formatProductsForEmail(products)}
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: parseInt(process.env.SMTP_PORT || '587') === 465, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const mailOptions = {
-      from: process.env.SMTP_FROM || `"DS Safety Server" <${process.env.SMTP_USER}>`,
+    const data = await resend.emails.send({
+      from: 'onboarding@resend.dev', // Default testing domain for Resend
       to: adminEmail,
       subject: `New Product Enquiry - ${orderId}`,
       text: bodyText,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Email notification sent successfully: ${info.messageId}`);
-    return { success: true, info };
+    console.log(`Email notification sent successfully via Resend: ${data.id}`);
+    return { success: true, data };
   } catch (error) {
     console.error('Failed to send email notification:', error);
     throw error;

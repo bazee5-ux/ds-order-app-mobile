@@ -3,19 +3,21 @@ import { View,
   Text, 
   StyleSheet, 
   Image, 
-  ScrollView, 
+  ScrollView,
   TouchableOpacity,
   LayoutAnimation,
   UIManager,
   Platform,
-  TextInput } from 'react-native';
+  TextInput,
+  KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Minus, Plus, ShoppingCart } from 'lucide-react-native';
 import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp, Product } from '../context/AppContext';
 import { productImages } from '../assets/productImages';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -158,7 +160,11 @@ export const ProductDetailsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
         {/* Large Product Image Container */}
         <View style={styles.imageContainer}>
           <Image source={imageSource} style={styles.image} resizeMode="contain" />
@@ -223,25 +229,40 @@ export const ProductDetailsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity 
-              style={styles.goToCartBtn} 
+              style={styles.goToCartBtnContainer} 
               onPress={() => navigation.navigate('Cart')}
               activeOpacity={0.8}
             >
-              <Text style={styles.goToCartBtnText}>View Cart</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+              <LinearGradient
+                colors={COLORS.primaryGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.goToCartBtn}
+              >
+                <Text style={styles.goToCartBtnText}>View Cart</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         ) : (
           <TouchableOpacity 
-            style={styles.addToCartBtn} 
+            style={styles.addToCartBtnContainer} 
             onPress={handleAddToCart}
             activeOpacity={0.8}
           >
-            <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.addToCartBtnText}>Add To Enquiry Cart</Text>
+            <LinearGradient
+              colors={COLORS.primaryGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.addToCartBtn}
+            >
+              <Ionicons name="cart-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.addToCartBtnText}>Add To Enquiry Cart</Text>
+            </LinearGradient>
           </TouchableOpacity>
         )}
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -389,14 +410,17 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.border,
     ...SHADOWS.medium,
   },
+  addToCartBtnContainer: {
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.soft,
+    overflow: 'hidden',
+  },
   addToCartBtn: {
-    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: BORDER_RADIUS.md,
-    ...SHADOWS.soft,
+    paddingHorizontal: 16,
   },
   addToCartBtnText: {
     color: '#FFFFFF',
@@ -432,15 +456,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 0,
   },
+  goToCartBtnContainer: {
+    borderRadius: BORDER_RADIUS.md,
+    flex: 0.5,
+    ...SHADOWS.soft,
+    overflow: 'hidden',
+  },
   goToCartBtn: {
-    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: BORDER_RADIUS.md,
-    flex: 0.5,
-    ...SHADOWS.soft,
+    paddingHorizontal: 16,
   },
   goToCartBtnText: {
     color: '#FFFFFF',

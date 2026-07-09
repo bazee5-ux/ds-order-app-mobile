@@ -19,7 +19,8 @@
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./src/assets/logo1.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bazee.dsengineering"
     },
     "web": {
       "favicon": "./src/assets/logo1.png"

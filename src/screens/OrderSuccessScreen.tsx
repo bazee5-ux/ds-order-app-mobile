@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { CheckCircle } from 'lucide-react-native';
 import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export const OrderSuccessScreen: React.FC = () => {
   const route = useRoute<any>();

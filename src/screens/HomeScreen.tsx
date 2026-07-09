@@ -1,4 +1,4 @@
-import React, { Activity, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, 
   Text, 
   StyleSheet, 
@@ -7,14 +7,16 @@ import { View,
   TextInput, 
   TouchableOpacity, 
   FlatList,
-  StatusBar } from 'react-native';
+  StatusBar, 
+  Dimensions} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, ShoppingCart, Search, XCircle, ShieldCheck, Eye, Footprints, Hand, User, Stethoscope, Shirt, Zap, Gauge, Flame, TriangleAlert, Link, Droplets, Headphones, BriefcaseMedical } from 'lucide-react-native';
+import { Activity, Heart, ShoppingCart, Search, XCircle, ShieldCheck, Eye, Footprints, Hand, User, Stethoscope, Shirt, Zap, Gauge, Flame, TriangleAlert, Link, Droplets, Headphones, BriefcaseMedical } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, FONTS, BORDER_RADIUS, SHADOWS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
 import catalogData from '../catalog/catalog.json';
 import { ProductCard } from '../components/ProductCard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const CATEGORIES = [
   { name: 'Head Protection', icon: 'shield-checkmark-outline' },
@@ -35,10 +37,48 @@ const CATEGORIES = [
   { name: 'First Aid & First Aid Kits', icon: 'medkit-outline' },
 ];
 
+const ESTEEMED_CLIENTS = [
+  { id: '1', name: 'Client 1', logoSrc: require('../../assets/clients/client1.png') },
+  { id: '2', name: 'Client 2', logoSrc: require('../../assets/clients/client2.png') },
+  { id: '3', name: 'Client 3', logoSrc: require('../../assets/clients/client3.png') },
+  { id: '4', name: 'Client 4', logoSrc: require('../../assets/clients/client4.png') },
+  { id: '5', name: 'Client 5', logoSrc: require('../../assets/clients/client5.png') }
+];
+
+const { width } = Dimensions.get('window');
+const BANNER_WIDTH = width - 48;
+
+const PROMO_BANNERS = [
+  { id: '1', imageUrl: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800&h=400', title: 'Industrial Safety Gear', subtitle: 'Premium quality protective gear' },
+  { id: '2', imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22731c9689?auto=format&fit=crop&q=80&w=800&h=400', title: 'New Arrivals', subtitle: 'Check out the latest PPEs' },
+  { id: '3', imageUrl: 'https://images.unsplash.com/photo-1541888086425-d81bb19240f5?auto=format&fit=crop&q=80&w=800&h=400', title: 'Bulk Discounts', subtitle: 'Up to 20% off on bulk orders' }
+];
+
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { cart, recentlyViewed, favorites } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const scrollRef = useRef<FlatList>(null);
+  const scrollOffset = useRef(0);
+  const contentWidth = useRef(0);
+  const layoutWidth = useRef(0);
+
+  const MARQUEE_DATA = [...ESTEEMED_CLIENTS, ...ESTEEMED_CLIENTS, ...ESTEEMED_CLIENTS, ...ESTEEMED_CLIENTS];
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (contentWidth.current > layoutWidth.current) {
+        scrollOffset.current += 1;
+        if (scrollOffset.current >= (contentWidth.current / 4)) {
+          scrollOffset.current = 0;
+        }
+        scrollRef.current?.scrollToOffset({ offset: scrollOffset.current, animated: false });
+      }
+    }, 25);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -98,14 +138,48 @@ export const HomeScreen: React.FC = () => {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Welcome Banner */}
-        <View style={styles.banner}>
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerSubtitle}>DS ENGINEERING ENTERPRISES</Text>
-            <Text style={styles.bannerTitle}>Industrial Safety & PPE Solutions</Text>
-            <Text style={styles.bannerDesc}>Premium quality protective gear certified to global standards.</Text>
-          </View>
+        {/* Promotional Banners Carousel */}
+        <View style={styles.carouselContainer}>
+          <FlatList
+            horizontal
+            data={PROMO_BANNERS}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={BANNER_WIDTH + 16}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            contentContainerStyle={styles.bannerList}
+            renderItem={({ item }) => (
+              <View style={styles.bannerWrapper}>
+                <Image source={{ uri: item.imageUrl }} style={styles.bannerImage} />
+                <LinearGradient 
+                  colors={['transparent', 'rgba(0,0,0,0.8)']}
+                  style={styles.bannerImageOverlay}
+                >
+                  <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+                  <Text style={styles.bannerTitle}>{item.title}</Text>
+                </LinearGradient>
+              </View>
+            )}
+          />
         </View>
+
+        {/* Esteemed Clients */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Our Esteemed Clients</Text>
+        </View>
+        <FlatList
+          data={MARQUEE_DATA}
+          keyExtractor={(item, index) => `client-${item.id}-${index}`}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.clientsList}
+          renderItem={({ item }) => (
+            <View style={styles.clientCard}>
+              <Image source={item.logoSrc} style={styles.clientLogoImage} resizeMode="contain" />
+            </View>
+          )}
+        />
 
         {/* Search Bar */}
         <View style={styles.searchSection}>
@@ -125,8 +199,15 @@ export const HomeScreen: React.FC = () => {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity style={styles.searchBtn} onPress={handleSearch}>
-            <Text style={styles.searchBtnText}>Search</Text>
+          <TouchableOpacity style={styles.searchBtnContainer} onPress={handleSearch} activeOpacity={0.8}>
+            <LinearGradient
+              colors={COLORS.primaryGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.searchBtn}
+            >
+              <Text style={styles.searchBtnText}>Search</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -275,22 +356,37 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: FONTS.extraBold,
   },
-  banner: {
-    backgroundColor: COLORS.primary,
-    marginHorizontal: 16,
+  carouselContainer: {
     marginTop: 16,
+  },
+  bannerList: {
+    paddingHorizontal: 16,
+  },
+  bannerWrapper: {
+    width: BANNER_WIDTH,
+    height: 160,
+    marginRight: 16,
     borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     ...SHADOWS.soft,
   },
-  bannerOverlay: {
-    padding: 24,
-    backgroundColor: 'rgba(0, 91, 172, 0.95)',
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  bannerImageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    paddingTop: 40,
   },
   bannerSubtitle: {
     fontSize: 10,
     fontFamily: FONTS.extraBold,
-    color: COLORS.accent,
+    color: COLORS.primary,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
@@ -298,13 +394,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: FONTS.extraBold,
     color: '#FFFFFF',
-    marginTop: 6,
-  },
-  bannerDesc: {
-    fontSize: 13,
-    color: '#E2E8F0',
-    marginTop: 6,
-    lineHeight: 18,
+    marginTop: 4,
   },
   searchSection: {
     flexDirection: 'row',
@@ -333,15 +423,17 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     height: '100%',
   },
+  searchBtnContainer: {
+    marginLeft: 8,
+    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.soft,
+    overflow: 'hidden',
+  },
   searchBtn: {
-    backgroundColor: COLORS.primary,
     height: 48,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: BORDER_RADIUS.md,
-    marginLeft: 8,
-    ...SHADOWS.soft,
   },
   searchBtnText: {
     color: '#FFFFFF',
@@ -396,6 +488,33 @@ const styles = StyleSheet.create({
   },
   recentItemContainer: {
     marginRight: 12,
+  },
+  clientsList: {
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  clientCard: {
+    width: 120,
+    height: 70,
+    backgroundColor: '#FFFFFF',
+    borderRadius: BORDER_RADIUS.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  clientLogoImage: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.9,
+  },
+  clientName: {
+    fontSize: 9,
+    fontFamily: FONTS.semiBold,
+    color: COLORS.text,
+    textAlign: 'center',
   },
   featuredGrid: {
     flexDirection: 'row',
